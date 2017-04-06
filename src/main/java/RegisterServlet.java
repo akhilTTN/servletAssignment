@@ -41,7 +41,7 @@ public class RegisterServlet extends HttpServlet {
                     String q1 = "select * from registration";
                     ResultSet rs = stmt.executeQuery(q1);
                     while (rs.next()) {
-                        if (unames.equals(rs.getString("uname"))) {
+                        if (unames.equals(rs.getString("username"))) {
                             rd = req.getRequestDispatcher("register.html");
                             /*out.print("<script>alert('this username is already registered. choose another')</script>");
                             out.print("<script>alert('this username is already registered. choose another')</script>");*/
