@@ -17,7 +17,12 @@ import java.sql.Statement;
 public class login extends HttpServlet {
     RequestDispatcher rd;
     PrintWriter out;
-    private String conString = "jdbc:mysql://localhost:3306/servletdb";
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req,resp);
+    }
+
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession sessions=req.getSession(true);
@@ -26,14 +31,12 @@ public class login extends HttpServlet {
         int ctr=0;
         uname=req.getParameter("name");
         pass=req.getParameter("pass");
-        String db=getServletContext().getInitParameter("dbString");
         try{
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con= DriverManager.getConnection(conString,"root","root");
+            Connection con= ConnectionPool.getConnection();
             Statement stmt=con.createStatement();
-            ResultSet rs=stmt.executeQuery("select username,password from registration");
+            ResultSet rs=stmt.executeQuery("select count(*) from registration where username='"+uname+"' and password='"+pass+"';");
             while(rs.next()){
-                if(uname.equals(rs.getString("username")) && pass.equals(rs.getString("password"))){
+                if(rs.getString(1).equals("1")){
                     sessions.setAttribute("uname",uname);
                     rd=req.getRequestDispatcher("/blog");
                     rd.forward(req,resp);
@@ -43,13 +46,15 @@ public class login extends HttpServlet {
             }
             if(ctr==0){
                 rd=req.getRequestDispatcher("login.html");
-//                out.print("<p style='color:red'; margin: 500px> please register first </p>");
                 out.print("<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js\"></script><script> $(document).ready(function(){$('#error').css('display', 'block') });</script>");
                 rd.include(req,resp);
             }
         }
         catch(Exception e){
         e.printStackTrace();
+        }
+        finally {
+            ConnectionPool.closeConnection();
         }
 
     }

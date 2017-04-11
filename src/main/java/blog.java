@@ -15,19 +15,22 @@ import java.sql.Statement;
  * Created by akhil on 27/3/17.
  */
 public class blog extends HttpServlet {
-    private String conString = "jdbc:mysql://localhost:3306/servletdb";
     RequestDispatcher rd;
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req,resp);
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         HttpSession sessions = req.getSession(false);
         String name = (String) sessions.getAttribute("uname");
         PrintWriter out = resp.getWriter();
-//        out.println("<script>alert("+name+")</script>");
         resp.setContentType("text/html");
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection(conString, "root", "root");
+
+            Connection con = ConnectionPool.getConnection();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("select max(id) from blog where name ='" + name + "';");
             while (rs.next()) {

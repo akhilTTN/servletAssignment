@@ -18,7 +18,11 @@ import java.util.List;
  * Created by akhil on 3/4/17.
  */
 public class show extends HttpServlet {
-    private String conString = "jdbc:mysql://localhost:3306/servletdb";
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req,resp);
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -29,8 +33,7 @@ public class show extends HttpServlet {
             String name = (String) session.getAttribute("uname");
 
             try {
-                Class.forName("com.mysql.jdbc.Driver");
-                Connection con = DriverManager.getConnection(conString, "root", "root");
+                Connection con = ConnectionPool.getConnection();
                 Statement stmt = con.createStatement();
                 ResultSet rs = stmt.executeQuery("select * from blog where name='" + name + "';");
                 while (rs.next()) {
@@ -38,11 +41,11 @@ public class show extends HttpServlet {
                     list.add(rs.getString("name"));
                     list.add(rs.getString("content"));
                 }
-            /*re= req.getRequestDispatcher("/blog.html");
-            out.println("<script>alert('Blog data inserted successfully')</script>    ");
-            re.include(req,resp);*/
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+            finally {
+                ConnectionPool.closeConnection();
             }
             session.setAttribute("data", list);
             rd = req.getRequestDispatcher("display.jsp");

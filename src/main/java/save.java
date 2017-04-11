@@ -14,8 +14,13 @@ import java.sql.Statement;
  * Created by akhil on 27/3/17.
  */
 public class save extends HttpServlet {
-    private String conString = "jdbc:mysql://localhost:3306/servletdb";
     PrintWriter out;
+
+
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        doPost(req,resp);
+    }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -24,19 +29,15 @@ public class save extends HttpServlet {
         resp.setContentType("text/html");
         HttpSession session = req.getSession(false);
         String content, name;
-//        name=(String)session.getAttribute("uname");
         String id;
-//        int id;
         content = req.getParameter("tarea");
         id = req.getParameter("id");
-//        id=Integer.parseInt(req.getParameter("id"));
         if (session!=null) {
             name = (String) session.getAttribute("uname");
             if (content != null && !content.equals("") && id != null && !id.equals("")) {
                 int ids = Integer.parseInt(id);
                 try {
-                    Class.forName("com.mysql.jdbc.Driver");
-                    Connection con = DriverManager.getConnection(conString, "root", "root");
+                    Connection con = ConnectionPool.getConnection();
                     Statement stmt = con.createStatement();
                     stmt.executeUpdate("insert into blog values('" + ids + "','" + name + "','" + content + "');");
                     re = req.getRequestDispatcher("/blog.html");
@@ -44,6 +45,9 @@ public class save extends HttpServlet {
                     re.include(req, resp);
                 } catch (Exception e) {
                     e.printStackTrace();
+                }
+                finally {
+                    ConnectionPool.closeConnection();
                 }
             } else {
                 re = req.getRequestDispatcher("blog.html");
